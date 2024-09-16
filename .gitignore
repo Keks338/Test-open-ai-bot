@@ -151,6 +151,7 @@ static/
 posts/static/
 media/
 
+TEST.py
 ddd.py
 base.py
 API.json
