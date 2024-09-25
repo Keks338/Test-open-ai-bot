@@ -8,7 +8,7 @@ import asyncio
 import json
 import logging
 from telegram import Update
-from telegram.ext import Application, CommandHandler, MessageHandler, filters
+from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 import openai
 from openai import OpenAI
 from .models import BotUser
@@ -44,6 +44,43 @@ async def webhook(request):
 async def operator_def(update: Update, thread_id):
     remove_thread.delay(thread_id)
     await update.message.reply_text("Я не смог ответить на ваш запрос, идёт вызов оператора...")
+
+
+async def plot_graph(equation_str: str, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    import numpy as np
+    import matplotlib.pyplot as plt
+
+    params = json.loads(equation_str)
+    equation = params.get("equation_str")
+
+    print(equation)
+    if "sin" in equation:
+        x = np.linspace(-2 * np.pi, 2 * np.pi, 400)
+    elif "cos" in equation:
+        x = np.linspace(-2 * np.pi, 2 * np.pi, 400)
+    else:
+        x = np.linspace(-10, 10, 400)
+    equation_str = equation.replace('^', '**')
+    equation_str = equation_str.replace('sin', 'np.sin')
+    equation_str = equation_str.replace('cos', 'np.cos')
+    try:
+        y = eval(equation_str.split('=')[1].strip())
+
+        plt.plot(x, y)
+        plt.title(f'График для уравнения: {equation_str}')
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.grid(True)
+        plt.savefig('plot.png')
+        plt.clf()
+        await context.bot.send_photo(chat_id=update.effective_chat.id, photo=open('plot.png', 'rb'))
+    except Exception as e:
+        print(f"Ошибка при построении графика: {e}")
+        return f"Error while plotting the graph: {e}"
+    return "Function completed succesfully! the image of function was sent to user!"
+
+
+
 
 # Функция для команды /start
 async def start(update: Update, context):
@@ -119,6 +156,18 @@ async def handle_message(update: Update, context):
         if run.status == "incomplete":
             await operator_def(update, user_record.thread_id)
             return print("AsstCanNotAnswer")
+        elif run.status == "requires_action":
+            function_res = await plot_graph(run.required_action.submit_tool_outputs.tool_calls[0].function.arguments, update, context)
+            client.beta.threads.runs.submit_tool_outputs(
+                thread_id=user_record.thread_id,
+                run_id=run.id,
+                tool_outputs=[
+                    {
+                        "tool_call_id": run.required_action.submit_tool_outputs.tool_calls[0].id,
+                        "output": function_res
+                    }
+                ]
+            )
 
     messages = client.beta.threads.messages.list(
         thread_id=user_record.thread_id
