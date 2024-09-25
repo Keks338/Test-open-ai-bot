@@ -158,3 +158,4 @@ base.py
 API.json
 login.json
 app.log
+*.png
