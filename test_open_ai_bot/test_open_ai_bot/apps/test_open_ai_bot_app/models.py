@@ -7,3 +7,6 @@ class BotUser(models.Model):
     date_joined = models.DateTimeField(auto_now_add=True)
     date_thread_created = models.DateTimeField(auto_now=True)
     thread_id = models.TextField(default="")
+    operator_id = models.IntegerField(default=0)
+    needed_operator = models.BooleanField(default=False)
+    is_operator = models.BooleanField(default=False)
