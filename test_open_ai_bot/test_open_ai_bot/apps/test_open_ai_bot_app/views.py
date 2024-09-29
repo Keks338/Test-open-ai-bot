@@ -126,6 +126,7 @@ async def user_check(update, context):
 
 # Функция для обработки текстовых сообщений
 async def handle_message(update: Update, context):
+    Incomplete_word = "Извините"
     text = update.message.text
     user = update.message.from_user
     current_time = timezone.now()
@@ -175,7 +176,9 @@ async def handle_message(update: Update, context):
                 thread_id=user_record.thread_id,
                 run_id=run.id
             )
+            test_id = True
             print(run.status)
+            # if test_id:
             if run.status == "incomplete":
                 user_record.needed_operator = 1
                 user_record2.needed_operator = 1
@@ -196,10 +199,19 @@ async def handle_message(update: Update, context):
                         }
                     ]
                 )
-
         messages = client.beta.threads.messages.list(
             thread_id=user_record.thread_id
         )
+        # if Incomplete_word in messages.data[0].content[0].text.value:
+        #     user_record.needed_operator = 1
+        #     user_record2.needed_operator = 1
+        #     await sync_to_async(user_record.save)()
+        #     await sync_to_async(user_record2.save)()
+        #     remove_thread.delay(user_record.thread_id)
+        #     textii = "Привет, я не смог ответить на сообщение пользователя --> " + update.message.text + ". Я соединил тебя с этим пользователем, попробуй ему объяснить."
+        #     await context.bot.send_message(chat_id=user_record2.user_id, text=textii)
+        #     await operator_def(update, context)
+        #     return print("AsstCanNotAnswer")
         await update.message.reply_text(f"{messages.data[0].content[0].text.value}")
 
 

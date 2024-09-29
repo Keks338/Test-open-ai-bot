@@ -5,7 +5,7 @@ import os
 load_dotenv()
 
 TOKEN = os.getenv('TOKEN')
-URL = 'https://8e5a-37-99-19-67.ngrok-free.app'
+URL = 'https://44c9-37-99-49-233.ngrok-free.app'
 WEBHOOK_URL = f"{URL}/webhook/"
 
 def set_webhook():
