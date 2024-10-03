@@ -1,0 +1,83 @@
+{% extends "../base.html" %}
+{% load static %}
+{% block title %}Логи сайта{% endblock %}
+{% block content %}
+{% if user.is_authenticated %}
+<div class="pt-16 w-full">
+    <div class="w-screen">
+        <div class="grid grid-cols-3 border-b border-gray-700 bg-gray-800">
+            <div class="border-r border-gray-700 p-2.5">
+                <center>
+                    <h2 class="text-white">Чаты</h2>
+                    <form class="max-w-xl w-full">
+                        <div class="flex">
+                            <input class="flex py-[6px] px-4 border-[#cccccc] outline-none w-full rounded-tl-[40px] rounded-bl-[40px] focus:border-lightblue" style="color:rgb(255, 255, 255);" type="search" placeholder="Поиск" id="searchfield-chatlist">
+                            <button type="submit" class="py-2 px-5 bg-[#cccccc] dorder border-[#cccccc] border-l-0 rounded-tr-[40px] rounded-br-[40px]"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-cyan-950">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                              </svg>
+                              </button>
+                        </div>
+                    </form>
+                </center>
+            </div>
+            <div class="col-span-2 p-2.5"> 
+                <center>
+                    <h2 class="text-white">Текущий чат</h2>
+                </center>
+            </div>
+        </div>
+        <div class="grid grid-cols-3 chat-box border-b border-gray-700 h-full">
+            <div class="border-r border-gray-700 p-2.5 bg-gray-800">
+                <div class="static-div-chat">
+                    <ul role="list" class="divide-y divide-gray-100 scrollable-list-chatbox">
+                        {% for User in Users2 %}
+                        <li class="flex justify-between gap-x-6 py-5 chat-friend">
+                            <a href="{% url 'ChatViewer:homePage2' user_id=User.id %}">
+                                <div class="flex min-w-0 gap-x-4">
+                                    <img class="h-12 w-12 flex-none rounded-full bg-black" src="{% static './images/logo.png' %}" alt="Logo">
+                                    <div class="min-w-0 flex-auto">
+                                        <p class="mt-1 truncate text-xs leading-5 text-gray-500">
+                                            <h3>Чат пользователя: {{ User.first_name }} {{ User.last_name }}</h3>
+                                        </p>
+                                    </div>
+                                    </div>
+                                    <div class="hidden shrink-0 sm:flex sm:flex-col sm:items-end">
+                                </div>
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <div class="col-span-2 h-full flex flex-col"> <!-- Форма чата -->
+                <div class="flex-grow overflow-auto">
+                    <div id="chat-messages-container" class="overflow-auto">
+                        <div class="scrollable-list-messages">
+                            <li class="message-container">
+                                <p><strong>' + message.sender + ':</strong> ' + message.content + '</p>';
+                                <span class="message-timestamp">' + message.creation_date + '</span>
+                            </li>
+                        </div>
+                    </div>
+                </div>
+            </div>            
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="pop-up-background-files fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50">
+    <div class="pop-up-card-login" style="padding-top: 1%;"> <!-- Модальное окно "Для не зарегистрированного пользователя" -->
+        <center style="margin-bottom: 5%;">
+            <h2 style="display: inline-block;">!!ТРЕБУЕТСЯ ВХОД!!</h2>
+        </center>
+        <center>
+            <a href="{% url "users:loginPage" %}" class="btn btn-primary" style="width: 50%; margin-bottom: 10%;">ВХОД</a>
+        </center>
+        <center>
+            <a href="{% url "users:signUp" %}" class="btn btn-primary" style="width: 50%;">РЕГИСТРАЦИЯ</a>
+        </center>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

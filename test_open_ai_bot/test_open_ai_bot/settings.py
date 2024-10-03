@@ -35,7 +35,7 @@ SECRET_KEY = 'django-insecure-o)xn@!56y)c5^$cx!%dkec6-#nubh^3lrf&#hh3a83yr5&(n7b
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    "6f70-37-99-60-251.ngrok-free.app"
+    #"6f70-37-99-60-251.ngrok-free.app"
 ]
 
 
@@ -48,9 +48,18 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'test_open_ai_bot.apps.test_open_ai_bot_app'
+    'test_open_ai_bot.apps.test_open_ai_bot_app',
+    'test_open_ai_bot.apps.ChatViewer',
+    'test_open_ai_bot.apps.users',
+    'crispy_forms',
+    'rest_framework',
+    'crispy_tailwind'
 ]
+X_FRAME_OPTIONS = "SAMEORIGIN"
+SILENCED_SYSTEM_CHECKS = ["security.W019"]
+CRISPY_ALLOWED_TEMPLATE_PACKS = "tailwind"
 
+CRISPY_TEMPLATE_PACK = "tailwind"
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -66,7 +75,7 @@ ROOT_URLCONF = 'test_open_ai_bot.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -115,7 +124,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru-RU'
 
 TIME_ZONE = 'Asia/Almaty'
 
@@ -130,6 +139,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
+STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field

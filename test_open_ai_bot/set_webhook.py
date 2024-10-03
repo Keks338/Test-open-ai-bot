@@ -5,8 +5,8 @@ import os
 load_dotenv()
 
 TOKEN = os.getenv('TOKEN')
-URL = 'https://44c9-37-99-49-233.ngrok-free.app'
-WEBHOOK_URL = f"{URL}/webhook/"
+URL = ''
+WEBHOOK_URL = f"{URL}/tgwb/webhook/"
 
 def set_webhook():
     url = f"https://api.telegram.org/bot{TOKEN}/setWebhook?url={WEBHOOK_URL}"

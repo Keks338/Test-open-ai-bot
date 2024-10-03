@@ -18,5 +18,7 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('test_open_ai_bot.apps.test_open_ai_bot_app.urls')),
+    path('', include('test_open_ai_bot.apps.ChatViewer.urls', namespace="ChatViewer")),
+    path('user/', include('test_open_ai_bot.apps.users.urls', namespace="users")),
+    path('tgwb/', include('test_open_ai_bot.apps.test_open_ai_bot_app.urls')),
 ]

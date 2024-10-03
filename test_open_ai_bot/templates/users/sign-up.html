@@ -1,0 +1,29 @@
+{% extends "../base.html" %}
+{% load static %}
+{% load tailwind_filters %}
+{% block title %}Регистрация{% endblock %}
+
+{% block content %}
+<style>
+    #hint_id_username, #hint_id_password1, #hint_id_password2 {
+        display: none;
+    }
+</style>
+<div class="container mx-auto mt-5">
+    <div class="card bg-white shadow-lg rounded-lg overflow-hidden mt-5" style="margin-top: 55px;">
+        <div class="card-body p-6">
+            <h2 class="text-2xl font-bold mb-5">Регистрация</h2>
+            <form method="post">
+                {% csrf_token %}
+                {{ form|crispy }}
+                <p class="mt-4">Если у вас уже есть аккаунт, то вы можете <a href="{% url 'users:loginPage' %}" class="text-blue-500 hover:underline">войти</a> в систему.</p>
+                <div class="flex justify-end mt-6">
+                    <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition duration-300">
+                        Зарегистрироваться
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

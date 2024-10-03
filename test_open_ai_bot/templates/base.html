@@ -1,0 +1,56 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" style="background-color: white; color: black; height: 100%;">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="{% static 'images/favicon.png' %}" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="{% static './css/full.css' %}" integrity="sha512-/2ELar91QbGVG+hv9oiEis94FmU9c2F5mah029EV39VO3baOfrOU4GYd5wS9Ozfl9SQ3lONAVPHkDMoNgedG/Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />    
+    <link rel="stylesheet" href="{% static './css/owl.carousel.min.css' %}">
+    <link rel="stylesheet" href="{% static './css/style.css' %}">
+    <link rel="stylesheet" href="{% static './css/owl.theme.default.min.css' %}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{% static './js/scritpic.js' %}"></script>
+    <title>{% block title %}{% endblock %}</title>
+</head>
+<body style="min-height: 100vh; display: flex; flex-direction: column;">
+    <div class="navbar text-neutral-content shadow mb-10" style="position: fixed; top: 0; z-index: 4; background-color: #000000;">
+        <div class="flex-1">
+            <a href="{% url "ChatViewer:homePage" %}" class="btn btn-ghost normal-case text-xl">Логи сайта</a>
+            <p>{% now "SHORT_DATETIME_FORMAT" %}</p>
+        </div>
+        <div class="flex-none" style="color: white;">
+            <ul class="menu menu-horizontal px-1">   
+                {% if user.is_authenticated %}        
+                  <li><a href="{% url "ChatViewer:homePage" %}">Главная страница</a></li>
+                {% endif %}
+            </ul>
+          {% if user.is_authenticated %}
+          <div class="dropdown dropdown-end">
+            <label tabindex="0" class="btn btn-ghost btn-circle avatar">
+              <div class="w-10 rounded-full">
+                <img src="{% static './images/logo.png' %}" width="16px" alt="Logo">
+              </div>
+            </label>
+            <ul tabindex="0" class="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52">
+              {% if user.is_superuser %}
+              <li><a href="{% url 'admin:index' %}" class="btn btn-primary mb-2">Админ панель</a></li>
+              {% endif %}
+              <!--<li><a href="% url 'users:logoutUser' %" class="btn btn-error">{{ user.username }} : Выход</a></li>-->
+              <li><a href="" class="btn btn-error">{{ user.username }} : Выход</a></li>
+            </ul>
+          </div>
+          {% endif %}
+        </div>
+    </div>
+    <div style="flex: 1; background-color: #ccc;">
+    {% block content %}{% endblock %}
+    </div>
+    <script src="{% static './js/jquery.min.js' %}"></script>
+    <script src="{% static './js/owl.carousel.min.js' %}"></script>
+    <script src="{% static './js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static './js/script.js' %}"></script>
+</body>
+</html>

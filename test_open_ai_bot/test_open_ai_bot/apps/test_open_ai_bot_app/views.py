@@ -12,6 +12,7 @@ from telegram.ext import Application, CommandHandler, MessageHandler, filters, C
 import openai
 from openai import OpenAI
 from .models import BotUser
+from ..ChatViewer.models import ChatViewer
 from dotenv import load_dotenv
 from .tasks import *
 import os
@@ -44,6 +45,7 @@ async def webhook(request):
 async def operator_def(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.message.from_user
     text = update.message.text
+    photos = update.message.photo
     user_record = await sync_to_async(BotUser.objects.get)(user_id = user.id)
     user_record2 = await sync_to_async(BotUser.objects.get)(user_id = int(os.getenv('Operator_User_id')))
     if user_record2.operator_id == 0:
@@ -54,6 +56,10 @@ async def operator_def(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if user_record.is_operator:
         print("Я оператор")
+        if photos:
+            highest_resolution_photo = photos[-1]
+            await ChatViewer.objects.acreate(chat_id=user_record3, sender="Оператор", sender_type="Operator", message="<Отправлено Изображение>")
+            await context.bot.send_photo(chat_id=user_record2.operator_id, photo=highest_resolution_photo)
         if "stopitnow" in text:
             user_record3.needed_operator = 0
             user_record2.needed_operator = 0
@@ -61,8 +67,10 @@ async def operator_def(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await sync_to_async(user_record3.save)()
             await sync_to_async(user_record2.save)()
             return
+        await ChatViewer.objects.acreate(chat_id=user_record3, sender="Оператор", sender_type="Operator", message=update.message.text)
         await context.bot.send_message(chat_id=user_record2.operator_id, text=update.message.text)
     else:
+        await ChatViewer.objects.acreate(chat_id=user_record3, sender=user_record3.first_name, sender_type="User", message=update.message.text)
         await context.bot.send_message(chat_id=user1_id, text=update.message.text)
 
 
@@ -72,7 +80,8 @@ async def plot_graph(equation_str: str, update: Update, context: ContextTypes.DE
 
     params = json.loads(equation_str)
     equation = params.get("equation_str")
-
+    user = update.message.from_user
+    user_record = await sync_to_async(BotUser.objects.get)(user_id=user.id)
     print(equation)
     if "sin" in equation:
         x = np.linspace(-2 * np.pi, 2 * np.pi, 400)
@@ -94,6 +103,7 @@ async def plot_graph(equation_str: str, update: Update, context: ContextTypes.DE
         plt.savefig('plot.png')
         plt.clf()
         await context.bot.send_photo(chat_id=update.effective_chat.id, photo=open('plot.png', 'rb'))
+        await ChatViewer.objects.acreate(chat_id=user_record, sender="ChatGPT", sender_type="User", message="<Отправлено Изображение>")
     except Exception as e:
         print(f"Ошибка при построении графика: {e}")
         return f"Error while plotting the graph: {e}"
@@ -125,8 +135,8 @@ async def user_check(update, context):
         await update.message.reply_text("Вы не зарегистрированный пользователь, был, сейчас вы уже зарегистрированы.")
 
 # Функция для обработки текстовых сообщений
-async def handle_message(update: Update, context):
-    Incomplete_word = "Извините"
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    Incomplete_word_massa = ["Извините", "К сожалению",]
     text = update.message.text
     user = update.message.from_user
     current_time = timezone.now()
@@ -170,6 +180,7 @@ async def handle_message(update: Update, context):
             assistant_id=os.getenv('Assistant_id'),
             instructions=f"User's name is {user_record.first_name}, and he has some problems in math. only you can help him. You can only use the .docx file which given to you."
         )
+        await ChatViewer.objects.acreate(chat_id=user_record, sender=user_record.first_name, sender_type="User", message=text)
         while run.status != "completed":
             time.sleep(1)
             run = client.beta.threads.runs.retrieve(
@@ -185,6 +196,8 @@ async def handle_message(update: Update, context):
                 await sync_to_async(user_record.save)()
                 await sync_to_async(user_record2.save)()
                 remove_thread.delay(user_record.thread_id)
+                textii = "Привет, я не смог ответить на сообщение пользователя --> " + update.message.text + ". Я соединил тебя с этим пользователем, попробуй ему объяснить. Напишите stopitnow тобы отключиться от пользователя."
+                await context.bot.send_message(chat_id=user_record2.user_id, text=textii)
                 await operator_def(update, context)
                 return print("AsstCanNotAnswer")
             elif run.status == "requires_action":
@@ -202,16 +215,18 @@ async def handle_message(update: Update, context):
         messages = client.beta.threads.messages.list(
             thread_id=user_record.thread_id
         )
-        # if Incomplete_word in messages.data[0].content[0].text.value:
-        #     user_record.needed_operator = 1
-        #     user_record2.needed_operator = 1
-        #     await sync_to_async(user_record.save)()
-        #     await sync_to_async(user_record2.save)()
-        #     remove_thread.delay(user_record.thread_id)
-        #     textii = "Привет, я не смог ответить на сообщение пользователя --> " + update.message.text + ". Я соединил тебя с этим пользователем, попробуй ему объяснить."
-        #     await context.bot.send_message(chat_id=user_record2.user_id, text=textii)
-        #     await operator_def(update, context)
-        #     return print("AsstCanNotAnswer")
+        for Incomplete_word in Incomplete_word_massa:
+            if Incomplete_word in messages.data[0].content[0].text.value:
+                user_record.needed_operator = 1
+                user_record2.needed_operator = 1
+                await sync_to_async(user_record.save)()
+                await sync_to_async(user_record2.save)()
+                remove_thread.delay(user_record.thread_id)
+                textii = "Привет, я не смог ответить на сообщение пользователя --> " + update.message.text + ". Я соединил тебя с этим пользователем, попробуй ему объяснить. Напишите stopitnow тобы отключиться от пользователя."
+                await context.bot.send_message(chat_id=user_record2.user_id, text=textii)
+                await operator_def(update, context)
+                return print("AsstCanNotAnswer")
+        await ChatViewer.objects.acreate(chat_id=user_record, sender="ChatGPT", sender_type="ChatGPT", message=messages.data[0].content[0].text.value)
         await update.message.reply_text(f"{messages.data[0].content[0].text.value}")
 
 
@@ -219,3 +234,4 @@ async def handle_message(update: Update, context):
 application.add_handler(CommandHandler('start', start))
 application.add_handler(CommandHandler('user_check', user_check))
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+application.add_handler(MessageHandler(filters.PHOTO, handle_message))
