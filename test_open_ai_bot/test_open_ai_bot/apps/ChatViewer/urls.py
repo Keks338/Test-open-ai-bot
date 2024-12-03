@@ -5,5 +5,6 @@ app_name = "ChatViewer"
 
 urlpatterns = [
     path('', views.homePage, name='homePage'),
-    path('Chat/<int:user_id>/', views.homePage2, name='homePage2'),
+    path('add-new-chat/', views.create_new_chat),
+    path('get-messages/<int:chat_id>/', views.get_messages),
 ]

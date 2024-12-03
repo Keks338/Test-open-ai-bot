@@ -60,6 +60,21 @@
                             {% endfor %}
                         </div>
                     </div>
+                    <form id="send-message-form" class="flex items-center p-2.5 bg-gray-800">
+                        <input type="text" style="color: #fff; background-color: #2A303C;" id="message-input" class="input input-bordered flex-grow mr-2" placeholder="Введите сообщение" required >
+                                <div class="dropdown dropdown-top dropdown-end">
+                                    <a tabindex="0" role="button" class="btn btn-primary rounded-r-none">
+                                        <i class="fa-solid fa-paperclip">
+                                        </i>
+                                    </a>
+                                    <ul style="background-color: #2a303c;" tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52 rounded-br-none">
+                                      <li><a style="color: #fff;" class="open-file-video">Видео</a></li>
+                                      <li><a style="color: #fff;" class="open-file-image">Изображение</a></li>
+                                      <li><a style="color: #fff;" class="open-file-audio">Аудио</a></li>
+                                    </ul>
+                                  </div>
+                        <button type="submit" class="btn btn-primary rounded-l-none">Отправить</button>
+                    </form>
                 </div>
             </div>            
         </div>

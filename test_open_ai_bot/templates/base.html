@@ -39,7 +39,7 @@
               <li><a href="{% url 'admin:index' %}" class="btn btn-primary mb-2">Админ панель</a></li>
               {% endif %}
               <!--<li><a href="% url 'users:logoutUser' %" class="btn btn-error">{{ user.username }} : Выход</a></li>-->
-              <li><a href="" class="btn btn-error">{{ user.username }} : Выход</a></li>
+              <li><a href="{% url 'users:logoutUser' %}" class="btn btn-error">{{ user.username }} : Выход</a></li>
             </ul>
           </div>
           {% endif %}
