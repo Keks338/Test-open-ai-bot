@@ -2,6 +2,7 @@ import time
 
 from django.utils import timezone
 from django.http import JsonResponse
+from django.core.files import File
 from django.views.decorators.csrf import csrf_exempt
 from asgiref.sync import sync_to_async
 import asyncio
@@ -52,14 +53,15 @@ client = OpenAI()
 #         # context.bot.send_message(chat_id=user1_id, text=update.message.text)
 
 
-def plot_graph(equation_str: str):
+def plot_graph(user, equation_str: str):
     import numpy as np
+    import matplotlib
+    matplotlib.use('Agg')
     import matplotlib.pyplot as plt
 
     params = json.loads(equation_str)
     equation = params.get("equation_str")
-    user = str("User_id")
-    user_record = BotUser.objects.get(user_id=user.id)
+    user_record = BotUser.objects.get(user_id=user)
     print(equation)
     if "sin" in equation:
         x = np.linspace(-2 * np.pi, 2 * np.pi, 400)
@@ -81,7 +83,16 @@ def plot_graph(equation_str: str):
         plt.savefig('plot.png')
         plt.clf()
         # context.bot.send_photo(chat_id=update.effective_chat.id, photo=open('plot.png', 'rb'))
-        ChatViewer.objects.create(chat_id=user_record, sender="ChatGPT", sender_type="User", message="<Отправлено Изображение>")
+        with open('plot.png', 'rb') as image_file:
+            file = File(image_file)
+            ChatViewer.objects.create(
+                chat_id=user_record,
+                sender="ChatGPT",
+                sender_type="User",
+                message_type="file",
+                file_type="image",
+                image=file
+            )
     except Exception as e:
         print(f"Ошибка при построении графика: {e}")
         return f"Error while plotting the graph: {e}"
@@ -96,7 +107,8 @@ def plot_graph(equation_str: str):
 def send_message(request):
     if request.method == "POST":
         data = json.loads(request.body)
-        Incomplete_word_massa = ["Извините", "К сожалению"]
+        # Incomplete_word_massa = ["Извините", "К сожалению"]
+        Incomplete_word_massa = []
         text = data["text"]
         user = request.user
         current_time = timezone.now()
@@ -126,7 +138,7 @@ def send_message(request):
 
             if diff_hours > 24:
                 remove_thread.delay(user_record.thread_id)
-                ChatViewer.objects.create(chat_id=user_record, sender="ChatGPT", sender_type="User",message="С момента создания потока прошло 24 часа, память сообщений очищена.")
+                ChatViewer.objects.create(chat_id=user_record, sender="ChatGPT", message_type="message", sender_type="User",message="С момента создания потока прошло 24 часа, память сообщений очищена.")
 
             if user_record.thread_id == "":
                 update_asst_db.delay()
@@ -145,7 +157,7 @@ def send_message(request):
                 assistant_id=os.getenv('Assistant_id'),
                 instructions=f"User's name is {user.first_name}, or user's username -> {user.username}, and he has some problems in math. only you can help him. You can only use the .docx file which given to you."
             )
-            ChatViewer.objects.create(chat_id=user_record, sender=user.username, sender_type="User", message=text)
+            ChatViewer.objects.create(chat_id=user_record, sender=user.username, sender_type="User", message_type="message", message=text)
             while run.status != "completed":
                 time.sleep(1)
                 run = client.beta.threads.runs.retrieve(
@@ -166,14 +178,14 @@ def send_message(request):
                     # operator_def(update, context)
                     return print("AsstCanNotAnswer")
                 elif run.status == "requires_action":
-                    # function_res = plot_graph(run.required_action.submit_tool_outputs.tool_calls[0].function.arguments, update, context)
+                    function_res = plot_graph(user, run.required_action.submit_tool_outputs.tool_calls[0].function.arguments)
                     client.beta.threads.runs.submit_tool_outputs(
                         thread_id=user_record.thread_id,
                         run_id=run.id,
                         tool_outputs=[
                             {
                                 "tool_call_id": run.required_action.submit_tool_outputs.tool_calls[0].id,
-                                # "output": function_res
+                                "output": function_res
                             }
                         ]
                     )
@@ -191,28 +203,6 @@ def send_message(request):
                     # context.bot.send_message(chat_id=user_record2.user_id, text=textii)
                     # operator_def(update, context)
                     return print("AsstCanNotAnswer")
-            ChatViewer.objects.create(chat_id=user_record, sender="ChatGPT", sender_type="ChatGPT", message=messages.data[0].content[0].text.value)
+            ChatViewer.objects.create(chat_id=user_record, sender="ChatGPT", sender_type="ChatGPT", message_type="message", message=messages.data[0].content[0].text.value)
             return JsonResponse("success", safe=False)
             # update.message.reply_text(f"{messages.data[0].content[0].text.value}")
-
-@csrf_exempt
-def get_messages(request, chat_id):
-    if request.method == 'GET':
-        messages = ChatViewer.objects.filter(chat_id=chat_id).select_related('sender').order_by(
-            'Message_Creation_Date')
-
-        # Объединяем данные в один список
-        combined_data = []
-
-        for message in messages:
-            combined_data.append({
-                'type': 'message',
-                'content': message.message,
-                'sender': message.sender.username,  # Получаем username отправителя
-                'creation_date': message.Message_Creation_Date
-            })
-
-        # Сортируем объединенные данные по дате создания
-        combined_data = sorted(combined_data, key=lambda x: x['creation_date'])
-        print(combined_data)
-        return JsonResponse(combined_data, safe=False)

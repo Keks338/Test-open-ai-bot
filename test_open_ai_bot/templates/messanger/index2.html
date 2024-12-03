@@ -171,6 +171,7 @@
             success: function(data) {
                 if (!arraysEqual(previousMessages, data)) {
                     $('.scrollable-list-messages').empty();
+                    console.log(data);
                     for (var i = 0; i < data.length; i++) {
                         var message = data[i];
                         var messageHtml = '';
@@ -179,12 +180,12 @@
                             continue; // Skip this iteration if the message format is invalid
                         }
 
-                        if (message.type == "message") {
+                        if (message.type === "message") {
                             messageHtml += '<li class="message-container ' + ("{{user}}" == message.sender ? 'sender' : 'receiver') + '">';
                             messageHtml += '<p><strong>' + message.sender + ':</strong> ' + message.content + '</p>';
                             messageHtml += '<span class="message-timestamp">' + message.creation_date + '</span>';
                             messageHtml += '</li>';
-                        } else if (message.type == "file") {
+                        } else if (message.type === "file") {
                             messageHtml += '<li class="message-container ' + ("{{user}}" == message.sender ? 'sender' : 'receiver') + '">';
                             messageHtml += '<p><strong>' + message.sender + ':</strong> ' + message.title + '</p>';
 

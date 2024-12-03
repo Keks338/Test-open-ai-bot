@@ -8,4 +8,7 @@ class ChatViewer(models.Model):
     sender_type = models.CharField(default="", max_length=255)
     Message_Creation_Date = models.DateTimeField(auto_now_add=True)
     message = models.TextField(default="")
+    message_type = models.TextField(default="")
+    file_type = models.TextField(default="")
+    image = models.ImageField(upload_to='images/', blank=True, null=True)
     type = models.CharField(default="", max_length=255)

@@ -42,13 +42,13 @@ def get_messages(request, chat_id):
 
         for message in messages:
             combined_data.append({
-                'type': 'message',
+                'type': message.message_type,
                 'content': message.message,
                 'sender': message.sender,  # Получаем username отправителя
-                'creation_date': message.Message_Creation_Date
+                'creation_date': message.Message_Creation_Date,
+                'image': message.image.url if message.image else None,
             })
 
         # Сортируем объединенные данные по дате создания
         combined_data = sorted(combined_data, key=lambda x: x['creation_date'])
-        print(combined_data)
         return JsonResponse(combined_data, safe=False)
